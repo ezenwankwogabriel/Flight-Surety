@@ -19,15 +19,30 @@ import './flightsurety.css';
 
         // User-submitted transaction
         DOM.elid('submit-oracle').addEventListener('click', () => {
-            let flight = DOM.elid('flight-number').value;
+            let flight = DOM.elid('select-flight').value;
             // Write transaction
             contract.fetchFlightStatus(flight, (error, result) => {
-                display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
+                let list = [ { label: 'Fetch Flight Status', error: error, value: result.status } ];
+                if (result.funds) 
+                    list.push({ label: 'Refunded Amount', error: error, value: result.funds + 'ether' })
+                
+                    display('Oracles', 'Trigger oracles', list);
             });
+        })
+
+        DOM.elid('pay-insurance').addEventListener('click', () => {
+            let insuranceAmount = DOM.elid('insurance-amount').value;
+            if (insuranceAmount > 1) return alert('Selected insurance fee should be less than one');
+            let selecedOption = DOM.elid('select-flight').value;
+            if (!selecedOption) throw new Error('No option selected')
+            // Write transaction
+            contract.payInsurance(selecedOption, insuranceAmount, (error, result) => {
+                console.log(error, result)
+                display('Buy Insurance', 'Pay insurance for flight', [ { label: 'Pay insurance', error: error, value: result[0] === true ? `Successfully paid ${result[1]} ether` : '' } ])
+            })
         })
     
     });
-    
 
 })();
 
